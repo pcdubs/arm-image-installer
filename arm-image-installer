@@ -488,6 +488,16 @@ fi
 
 sleep 5
 
+get_lvm_name
+
+if [ "$RENAME_LVM" = "1" ] && [ "$LVM_NAME" != "fedora-server" ]; then
+# rename VG if host system uses conflicting names
+  LVM_UUID=$(pvs -o +vguuid | grep $MEDIA | awk '{print $7}')
+  vgrename $LVM_UUID fedora-server
+  LVM_NAME=fedora-server
+fi
+
+
 # make temp mount points
 mkdir /tmp/boot /tmp/root /tmp/fw > /dev/null 2>&1
 mount "$BOOTPART" /tmp/boot > /dev/null 2>&1
