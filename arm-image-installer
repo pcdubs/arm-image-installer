@@ -550,7 +550,7 @@ fi
 
 # determine uboot and write to disk
 if [ "$TARGET" != "" ]; then
-	if echo "$TARGET" | grep -q 'rpi[234]' || [ "$TARGET" = "olpc_xo175" ]; then
+	if echo "$TARGET" | grep -q 'rpi[234]' || [ "$TARGET" = "olpc_xo175" ] || [ "$TARGET" = "beagleplay" ]; then
 		. "${BOARDDIR}/${TARGET}"
 	elif [ -d "${PREFIX}/usr/share/uboot/${TARGET}" ]; then
 		. "${BOARDDIR}/${TARGET}"

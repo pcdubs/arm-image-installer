@@ -1,0 +1,38 @@
+#!/bin/bash
+
+cleanup()
+{
+	rm -rf /tmp/fw_bk &> /dev/null
+	return
+}
+
+echo "= Reformat the ESP filesystem to use the device geometry"
+if [ "$FIRMPART" == "" ] ; then
+	echo "ERROR: Firmware partition not available - wrong image?"
+	return
+fi
+
+mkdir /tmp/fw_bk
+cp -a /tmp/fw/* /tmp/fw_bk/
+umount /tmp/fw
+
+UUID="$(lsblk -no UUID $FIRMPART)"
+mkfs.vfat "$FIRMPART" &> /dev/null
+if [ $? != 0 ] ; then
+	echo "ERROR: Firmware partition filesystem reformatting failed!"
+	cleanup
+fi
+
+# restore the old filesystem UUID to match the /etc/fstab
+printf "\x${UUID:7:2}\x${UUID:5:2}\x${UUID:2:2}\x${UUID:0:2}" \
+	| dd bs=1 seek=67 count=4 conv=notrunc of="$FIRMPART" status=none
+
+# restore the firmware files from the backup directory
+mount "$FIRMPART" /tmp/fw
+cp -a /tmp/fw_bk/* /tmp/fw/
+
+sync
+cleanup
+
+# set console
+SYSCON=ttyS2,115200
