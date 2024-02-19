@@ -17,7 +17,7 @@ optional
         --tag=KOJI TAG  - koji tag to download build
         --reboot        - reboot after update
 
-Example: $(basename ${0}) --target=panda --media=/dev/mmcblk0
+Example: $(basename ${0}) --target=pine64_plus --media=/dev/mmcblk0
 
 For list of supported boards please check SUPPORTED-BOARDS file.
 "
@@ -118,7 +118,7 @@ if [[ $KOJI_TAG != '' ]]; then
 fi
 # determine uboot and write to disk
 if [ "$TARGET" != "" ]; then
-        if [ "$TARGET" = "rpi2" ] || [ "$TARGET" = "rpi3" ] || [ "$TARGET" = "olpc_xo175" ]; then
+        if [ "$TARGET" = "rpi[34]" ]; then
                 . "${BOARDDIR}/${TARGET}"
         elif [ -d "${PREFIX}/usr/share/uboot/${TARGET}" ]; then
                 . "${BOARDDIR}/${TARGET}"

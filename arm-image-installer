@@ -150,9 +150,6 @@ while [ $# -gt 0 ]; do
 		--relabel)
 			RELABEL=1
 			;;
-		--lpae)
-                        LPAE=1
-                        ;;
 		--showboot)
 			SHOWBOOT=1
 			;;
@@ -219,11 +216,6 @@ if [ "$MEDIA" = "$ROOTDISK" ]; then
 		echo "User exit, no image written."
 		exit 0
 	fi
-fi
-
-# change cubietruck target to uppercase
-if [ "$TARGET" = "cubietruck" ]; then
-	TARGET="Cubietruck"
 fi
 
 # check for boards
@@ -301,10 +293,6 @@ fi
 # User ssh key
 if [ "$SSH_KEY" != "" ]; then
 	echo "= SSH Public Key $SSH_KEY will be added."
-fi
-# Use the lpae kernel
-if [ "$LPAE" != "" ]; then
-        echo "= The LPAE kernel will be the default."
 fi
 # show boot messages
 if [ "$SHOWBOOT" != "" ]; then
@@ -550,7 +538,7 @@ fi
 
 # determine uboot and write to disk
 if [ "$TARGET" != "" ]; then
-	if echo "$TARGET" | grep -q 'rpi[234]' || [ "$TARGET" = "olpc_xo175" ] || [ "$TARGET" = "beagleplay" ]; then
+	if echo "$TARGET" | grep -q 'rpi[34]' || [ "$TARGET" = "beagleplay" ]; then
 		. "${BOARDDIR}/${TARGET}"
 	elif [ -d "${PREFIX}/usr/share/uboot/${TARGET}" ]; then
 		. "${BOARDDIR}/${TARGET}"
@@ -615,16 +603,9 @@ if [ "$CONSOLE" = "1" ]; then
 	echo "= Adding console $SYSCON to kernel parameters ..."
 	add_kernel_parameter "console=$SYSCON console=tty0"
 
-	if echo "$TARGET" | grep -q 'rpi[234]'; then
+	if echo "$TARGET" | grep -q 'rpi[34]'; then
 		sed -i "s|# enable_uart=1|enable_uart=1|" /tmp/fw/config.txt
 	fi
-fi
-
-# fix up rpi2/3
-if [ "$FIX_RPI" != "" ]; then
-	echo "= Blacklisting the VC4 Driver for the Raspberry Pi 2/3"
-	echo blacklist vc4 > ${PREFIX}/etc/modprobe.d/blacklist-vc4.conf
-	add_kernel_parameter "rd.driver.blacklist=vc4"
 fi
 
 # check if host system has selinux disabled, if it does autorelabel is required
@@ -647,25 +628,6 @@ if [ "$OPT_ARGS" != "" ] ; then
 	echo "= Adding optional kernel parameters for $TARGET : "
 	echo "= Parameter: $OPT_ARGS"
 	add_kernel_parameter "$OPT_ARGS"
-fi
-# if using rpi4 && armhfp limit ram to 1GB with warning
-if [ $TARGET = "rpi4" ] && [ "$(echo $IMAGE | grep -i armhfp)" != "" ]; then
-        # edit config.txt to limit memory on boot
-        echo "#################################################################"
-        echo "# The Raspberry Pi 4 must be limited to 1 GB of RAM on first boot."
-        echo "# To enable the additional RAM, install the lpae kernel and edit the"
-        echo "# /boot/config.txt and remove or comment the line 'total_mem=1024'."
-        echo "#################################################################"
-        # issue warning for the change
-        echo "total_mem=1024" >> /tmp/fw/config.txt
-
-fi
-
-# prefer the lpae kernel
-if [ "$LPAE" != "" ]; then
-	if [ -f /tmp/boot/grub2/grubenv ]; then
-		sed -i 's|^saved_entry.*|&+lpae|' /tmp/boot/grub2/grubenv
-	fi
 fi
 # remove quiet from kargs
 if [ "$SHOWBOOT" != "" ]; then

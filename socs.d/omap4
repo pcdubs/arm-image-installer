@@ -1,7 +1,0 @@
-# write MLO & U-Boot
-echo "= Writing MLO for $TARGET...."
-dd if=$PREFIX/usr/share/uboot/$TARGET/MLO of=$MEDIA seek=1 conv=notrunc bs=128k; sync
-echo "= Writing u-boot.img for $TARGET...."
-dd if=$PREFIX/usr/share/uboot/$TARGET/u-boot.img of=$MEDIA seek=1 conv=notrunc bs=384k; sync
-# set console
-SYSCON=ttyS2,115200

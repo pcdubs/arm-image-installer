@@ -17,7 +17,7 @@ Usage: $(basename ${0}) <options>
 optional
         --tag=KOJI TAG  - koji tag to download build
 
-Example: $(basename ${0}) --target=panda --media=/dev/mmcblk0
+Example: $(basename ${0}) --target=pine64-lts --media=/dev/mmcblk0
 
 For list of supported boards please check SUPPORTED-BOARDS file.
 The devices must have on board SPI flash and support enabled for it.
