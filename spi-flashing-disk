@@ -23,6 +23,12 @@ The devices must have on board SPI flash and support enabled for it.
 "
 }
 
+# Return help for no args
+if [ $# -eq 0 ]; then
+	usage
+	exit 0
+fi
+
 # check the args
 while [ $# -gt 0 ]; do
 	case $1 in
