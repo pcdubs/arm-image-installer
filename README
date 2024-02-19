@@ -11,8 +11,13 @@ ARM disk image for use with various hardware targets.
  - customize media with platform specific U-Boot file(s)
  - Turn SE Linux on and off
  - Remove the root password
- - Update U-Boot for another Target
+ - Update U-Boot for a Target
  
+Note that the list of supported devices is a list of devices that arm-image-installer
+supports setting up the early boot firmware, it does not indicate the level of
+support for the device in Fedora for things like kernel drivers, functionality like
+display, audio, USB or any other specific hardware feature.
+
 To add additional support, create a code snippet file 
 (bash script) in the "boards.d" subdirectory with the commands 
 needed to write U-Boot for the target board. 
@@ -25,18 +30,18 @@ Optional
 	--addconsole    - Add system console kernel parameter for the target
 	--addkey        - /path/to/ssh-public-key
 	--args          - Optional kernel parameters listed in quotes
-	--norootpass	- Remove the root password
+	--norootpass    - Remove the root password
 	--relabel       - SELinux relabel root filesystem on first boot
 	--resizefs      - Resize root filesystem to fill media device
-	--sysrq		- Enable System Request debugging of the kernel
-	--target=TARGET	- target board for uboot
-	-y		- Assumes yes, will not wait for confirmation
+	--showboot	- Show boot messages, removes 'rhgb quiet' from kargs
+	--sysrq         - Enable System Request debugging of the kernel
+	--target=TARGET - target board for uboot
+	-y              - Assumes yes, will not wait for confirmation
 Help
-	--supported     - List of supported hardware
+	--supported     - List of hardware we support writing out boot firmware
 	--version       - Display version and exit
 
-
-Example: arm-image-installer --image=Fedora-Rawhide.xz --target=panda --media=/dev/mmcblk0 --selinux=OFF
+Example: arm-image-installer --image=Fedora-Rawhide.xz --target=pine64_plus --media=/dev/mmcblk0
 
 update-uboot
 ------------
@@ -47,7 +52,10 @@ newer u-boot from koji by specifying a koji tag.
 Usage: update-uboot <options>
 
 	--media=DEVICE	- media device file (/dev/[sdX|mmcblkX])
-	--tag=KOJI TAG	- koji tag to download build
 	--target=TARGET	- target board
 
-Example: update-uboot --target=panda --media=/dev/mmcblk0
+optional
+        --tag=KOJI TAG  - koji tag to download build
+        --reboot        - reboot after update
+
+Example: update-uboot --target=pine64_plus --media=/dev/mmcblk0

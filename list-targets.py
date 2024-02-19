@@ -10,11 +10,9 @@ def printboards(boards):
 os.chdir("boards.d")
 
 allwinner = ""
-allwinner64 = ""
-mx6 = ""
-omap = ""
-mvebu = ""
-st = ""
+am625 = ""
+qcom = ""
+rk33xx = ""
 other = ""
 
 for entry in sorted(os.listdir('.')):
@@ -22,39 +20,28 @@ for entry in sorted(os.listdir('.')):
     if os.path.islink(entry):
         if 'AllWinner' == os.path.basename(os.path.realpath(entry)):
             allwinner += "%s " % entry
-        elif 'AllWinner-A64' == os.path.basename(os.path.realpath(entry)):
-            allwinner64 += "%s " % entry
-        elif 'omap' == os.path.basename(os.path.realpath(entry)):
-            omap += "%s " % entry
-        elif 'imx6' == os.path.basename(os.path.realpath(entry)):
-            mx6 += "%s " % entry
-        elif 'mvebu' == os.path.basename(os.path.realpath(entry)):
-            mvebu += "%s " % entry
-        elif 'st' == os.path.basename(os.path.realpath(entry)):
-            st += "%s " % entry
+        elif 'am625' == os.path.basename(os.path.realpath(entry)):
+            am625 += "%s " % entry
+        elif 'qcom' == os.path.basename(os.path.realpath(entry)):
+            qcom += "%s " % entry
+        elif 'rk33xx' == os.path.basename(os.path.realpath(entry)):
+            rk33xx += "%s " % entry
         else:
             if entry != 'none':
                 other += "%s " % entry
 
 
-
 print("AllWinner Devices:")
 printboards(allwinner)
 
-print("AllWinner-A64 Devices:")
-printboards(allwinner64)
+print("TI am625 Devices:")
+printboards(am625)
 
-print("MX6 Devices:")
-printboards(mx6)
+print("QCom Devices:")
+printboards(qcom)
 
-print("OMAP Devices:")
-printboards(omap)
-
-print("MVEBU Devices:")
-printboards(mvebu)
-
-print("ST Devices:")
-printboards(st)
+print("Rockchips rk33xx series Devices:")
+printboards(rk33xx)
 
 print("Other Devices:")
 printboards(other)
