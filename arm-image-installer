@@ -463,7 +463,7 @@ if [ "$RESIZEFS" != "" ]; then
 		partprobe "$MEDIA"
 		if [ "$LVM_NAME" != "" ]; then
 			vgchange --devices $ROOTPART -a y $LVM_NAME > /dev/null 2>&1
-			pvresize "$ROOTPART"
+			pvresize --devices $ROOTPART "$ROOTPART"
 			lvextend --devices $ROOTPART -l +100%FREE /dev/$LVM_NAME/root
 			ROOTLV="/dev/$LVM_NAME/root"
 		fi
