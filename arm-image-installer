@@ -342,7 +342,7 @@ partprobe "$MEDIA"
 
 get_lvm_name () {
 	if [ "$(fdisk -l $MEDIA | grep LVM)" != "" ]   ; then
-		LVM_NAME=$(pvs 2> /dev/null | grep $MEDIA | awk '{print $2}')
+		LVM_NAME=$(pvs --devices $ROOTPART 2> /dev/null | grep $MEDIA | awk '{print $2}')
 	fi
 }
 
@@ -399,6 +399,9 @@ else
 fi
 
 FS_TYPE=$(blkid "$ROOTPART" -s TYPE -o value)
+
+if [ "$FS_TYPE" = "LVM2_member" ]; then FS_TYPE="xfs"; fi
+
 if [ "$FS_TYPE" = "btrfs" ]; then
 	BTRFS=1
 fi
@@ -438,13 +441,13 @@ if [ "$RESIZEFS" != "" ]; then
 	if [ "$PARTNUM" = "3" ]; then
 		if [ "$RENAME_LVM" = "1" ]; then
 		# rename VG if host system uses conflicting names
-			LVM_UUID=$(pvs -o +vguuid | grep $MEDIA | awk '{print $7}')
-			vgrename $LVM_UUID fedora-server
+			LVM_UUID=$(pvs --devices $ROOTPART -o +vguuid | grep $MEDIA | awk '{print $7}')
+			vgrename --devices $ROOTPART $LVM_UUID fedora-server
 			LVM_NAME=fedora-server
 		fi
 
 		get_lvm_name
-		vgchange -a n $LVM_NAME > /dev/null 2>&1
+		vgchange --devices $ROOTPART -a n $LVM_NAME > /dev/null 2>&1
 
 		echo ", +" | sfdisk -N "$PARTNUM" "$MEDIA"
 		while [ $? != '0' ]; do
@@ -459,16 +462,16 @@ if [ "$RESIZEFS" != "" ]; then
 		sleep 5
 		partprobe "$MEDIA"
 		if [ "$LVM_NAME" != "" ]; then
-			vgchange -a y $LVM_NAME > /dev/null 2>&1
+			vgchange --devices $ROOTPART -a y $LVM_NAME > /dev/null 2>&1
 			pvresize "$ROOTPART"
-			lvextend -l +100%FREE /dev/$LVM_NAME/root
-			ROOTPART="/dev/$LVM_NAME/root"
+			lvextend --devices $ROOTPART -l +100%FREE /dev/$LVM_NAME/root
+			ROOTLV="/dev/$LVM_NAME/root"
 		fi
 	fi
 
 	if [ "$FS_TYPE" = "xfs" ] && [ "$LVM_NAME" != "" ]; then
 		mkdir /tmp/root > /dev/null 2>&1
-		mount "$ROOTPART" /tmp/root > /dev/null 2>&1
+		mount "$ROOTLV" /tmp/root > /dev/null 2>&1
 		xfs_growfs /tmp/root
 	elif [ "$FS_TYPE" = "btrfs" ]; then
 		mkdir /tmp/root > /dev/null 2>&1
@@ -486,8 +489,8 @@ get_lvm_name
 
 if [ "$RENAME_LVM" = "1" ] && [ "$LVM_NAME" != "fedora-server" ]; then
 # rename VG if host system uses conflicting names
-  LVM_UUID=$(pvs -o +vguuid | grep $MEDIA | awk '{print $7}')
-  vgrename $LVM_UUID fedora-server
+  LVM_UUID=$(pvs --devices $ROOTPART -o +vguuid | grep $MEDIA | awk '{print $7}')
+  vgrename --devices $ROOTPART $LVM_UUID fedora-server
   LVM_NAME=fedora-server
 fi
 
@@ -507,7 +510,7 @@ fi
 
 if [ "$RESIZEFS" = "" ]; then
 	get_lvm_name
-	vgchange -a y $LVM_NAME > /dev/null 2>&1
+	vgchange --devices $ROOTPART -a y $LVM_NAME > /dev/null 2>&1
 fi
 
 if [ "$(grep /tmp/root /proc/mounts)" = "" ]; then
@@ -644,7 +647,7 @@ sync
 
 umount /tmp/root $BOOTPART $FIRMPART > /dev/null 2>&1
 if [ "$LVM_NAME" != "" ]; then
-	vgchange -a n $LVM_NAME > /dev/null 2>&1
+	vgchange --devices $ROOTPART -a n $LVM_NAME > /dev/null 2>&1
 fi
 rmdir  /tmp/root /tmp/boot /tmp/fw > /dev/null 2>&1
 
