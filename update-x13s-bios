@@ -1,0 +1,116 @@
+#!/usr/bin/bash
+# Copyright (C) 2024 Red Hat Inc.
+# SPDX-License-Identifier:  GPL-2.0+
+
+# This script will extract bios updates for the x13s and make an iso
+
+# usage message
+usage() {
+    echo "
+Usage: $(basename ${0}) <options>
+
+	--media=DEVICE	- media device file (/dev/[sdX|mmcblkX])
+	--bios=FILE	- bios file
+
+Example: $(basename ${0}) --file=n3huj19w.exe --media=/dev/sdb
+
+Bios can be downloaded from Lenovo's website
+https://pcsupport.lenovo.com/us/en/products/laptops-and-netbooks/thinkpad-x-series-laptops/thinkpad-x13s-type-21bx-21by/downloads/driver-list/component?name=BIOS%2FUEFI&id=5AC6A815-321D-440E-8833-B07A93E0428C
+"
+}
+CWD=$(pwd)
+# check the args
+while [ $# -gt 0 ]; do
+	case $1 in
+		--debug)
+			set -x
+			;;
+		-h|--help)
+			usage
+			;;
+		--bios*)
+			if echo $1 | grep '=' >/dev/null ; then
+				BIOSFILE=$(echo $1 | sed 's/^--bios=//')
+			else
+				BIOSFILE=$2
+				shift
+			fi
+			;;
+		--media*)
+			if echo $1 | grep '=' >/dev/null ; then
+				MEDIA=$(echo $1 | sed 's/^--media=//')
+			else
+				MEDIA=$2
+				shift
+			fi
+			;;
+		*)
+			echo "$(basename ${0}): Error - ${1}"
+			usage
+			exit 1
+			;;
+	esac
+	shift
+done
+# ensure sudo user
+if [ "$(whoami)" != "root" ]; then
+	echo "Error: This script requires 'sudo' privileges in order to write to disk & mount media."
+	exit 1
+fi
+
+# check if media exists
+if [[ ! -e $MEDIA ]]; then
+	echo "Missing media"
+	usage
+	exit 1
+fi
+
+# make sure we have the bios file
+if [[ ! -e $BIOSFILE ]]; then
+	echo "Missing bios file"
+	usage
+	exit 1
+else
+	# Make sure the bios file exists and we can access it
+	if [[ ! $BIOSFILE == /* ]]; then
+		BIOSFILE="$CWD/$BIOSFILE"
+	fi
+	if [ ! -f $BIOSFILE ]; then
+		echo "$BIOSFILE does not exist"
+		usage
+		exit 1
+	fi
+fi
+
+OUT=$(mktemp -d)
+WORKDIR=$(mktemp -d)
+NAME="x13s-bios"
+
+pushd $WORKDIR
+        # Create a VFAT partition, 32Mb offset, 256Mb in size
+	parted -s "$MEDIA" mklabel gpt
+	parted -s "$MEDIA" mkpart -a cylinder BIOS fat32 8MiB 256MiB
+	parted -s "$MEDIA" toggle 1 esp
+	partprobe "$MEDIA"
+
+	if [ -e "$MEDIA"p1 ]; then
+		mkfs.vfat "$MEDIA"p1
+		mount "$MEDIA"p1 $OUT > /dev/null 2>&1
+	elif [ -e "$MEDIA"1 ]; then
+		mkfs.vfat "$MEDIA"1
+		mount "$MEDIA"1 $OUT > /dev/null 2>&1
+	fi
+
+	# extract the files from the archive and put them in place
+	innoextract $BIOSFILE
+	mkdir --parent $OUT/{EFI/Boot,Flash}
+	cp code\$GetExtractPath\$/Rfs/Usb/Bootaa64.efi $OUT/EFI/Boot/
+	cp -r code\$GetExtractPath\$/Rfs/Fw/* $OUT/Flash/
+
+	umount $OUT
+popd
+
+rm -rf $OUT/
+rm -rf $WORKDIR/
+
+echo "Insert usb stick in x13s, boot and press f12 to select the  usb drive to boot from to install update"
