@@ -140,12 +140,12 @@ if [ "$TARGET" != "" ]; then
         if [ -d "${PREFIX}/usr/share/uboot/${TARGET}" ]; then
                 . "${BOARDDIR}/${TARGET}"
                 cp "${PREFIX}/usr/share/uboot/${TARGET}/"* /tmp/fw ## 2>&1
-                umount /tmp/fw
         else
                 echo "= No U-Boot files found for $TARGET."
         fi
 fi
 
+umount /tmp/fw
 rmdir /tmp/fw
 
 # vi: tabstop=8 softtabstop=0 expandtab shiftwidth=8 smarttab
