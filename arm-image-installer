@@ -590,11 +590,15 @@ if [ "$SSH_KEY" != "" ]; then
 		echo "= Adding SSH key to authorized keys."
 		if [ "$IOT_IMAGE" = "1" ]; then
 			mkdir $OSTREE_ROOT_HOME/.ssh/ > /dev/null 2>&1
+			echo "# ssh key added by arm-image-installer" >> $OSTREE_ROOT_HOME/.ssh/authorized_keys
 			cat $SSH_KEY >> $OSTREE_ROOT_HOME/.ssh/authorized_keys
+			echo "# end arm-image-installer key" >> $OSTREE_ROOT_HOME/.ssh/authorized_keys
 			chmod -R u=rwX,o=,g= $OSTREE_ROOT_HOME/.ssh/
 		else
 			mkdir ${PREFIX}/root/.ssh/ > /dev/null 2>&1
+			echo "# ssh key added by arm-image-installer" >> ${PREFIX}/root/.ssh/authorized_keys
 			cat $SSH_KEY >> ${PREFIX}/root/.ssh/authorized_keys
+			echo "# end arm-image-installer key" >> ${PREFIX}/root/.ssh/authorized_keys
 			chmod -R u=rwX,o=,g= ${PREFIX}/root/.ssh/
 		fi
 	else
