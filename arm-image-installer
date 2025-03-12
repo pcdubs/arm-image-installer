@@ -18,6 +18,7 @@ Optional
 	--addconsole    - Add system console kernel parameter for the target
 	--addkey        - /path/to/ssh-public-key
 	--args          - Optional kernel parameters listed in quotes
+	--ign-url	- url for ignition configuration file (IoT)
 	--norootpass    - Set the root password to the empty string
 	--relabel       - SELinux relabel root filesystem on first boot
 	--resizefs      - Resize root filesystem to fill media device
@@ -179,6 +180,18 @@ while [ $# -gt 0 ]; do
                 exit 1
             fi
             ;;
+		--ign-url)
+                        if echo $1 | grep '=' >/dev/null ; then
+                                IGN_URL=$(echo $1 | sed 's/^--ign-url=//')
+                        elif [ -n "$2" ]; then
+                                IGN_URL=$2
+                                shift
+                        else
+                                echo "$(basename ${0}): Error - '--ign-url' expects an argument"
+                                usage
+                                exit 1
+                        fi
+                        ;;
 		--norootpass)
 			NOROOTPASS=1
 			;;
@@ -352,6 +365,9 @@ fi
 # show boot messages
 if [ "$SHOWBOOT" != "" ]; then
         echo "= Boot messages will be shown onscreen."
+fi
+if [ "$IGN_URL" != "" ]; then
+	echo "= Ignition URL: $IGN_URL "
 fi
 echo "= Version: $VERSION"
 echo "====================================================="
@@ -733,6 +749,11 @@ fi
 # remove quiet from kargs
 if [ "$SHOWBOOT" != "" ]; then
 		 sed -i 's|rhgb quiet ||g' /tmp/boot/loader/entries/*.conf
+fi
+
+if [ "$IGN_URL" != "" ]; then
+	echo "= Adding ignition url for configuraion on firstboot."
+	sed -i "s|true|true ignition.firstboot=1 ignition.config.url=${IGN_URL}|g" /tmp/boot/ignition.firstboot
 fi
 
 sync
