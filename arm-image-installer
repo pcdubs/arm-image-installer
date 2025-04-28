@@ -141,47 +141,47 @@ while [ $# -gt 0 ]; do
 			fi
 			;;
 		--wifi-ssid*)
-            if echo $1 | grep '=' >/dev/null ; then
-                WIFI_SSID=$(echo $1 | sed 's/^--wifi-ssid=//')
-            elif [ -n "$2" ]; then
-                WIFI_SSID=$2
-                shift
-            else
-                echo "$(basename ${0}): Error - '--wifi-ssid' expects an argument"
-                usage
-                exit 1
-            fi
-            ;;
-        --wifi-pass*)
-            if echo $1 | grep '=' >/dev/null ; then
-                WIFI_PASS=$(echo $1 | sed 's/^--wifi-pass=//')
-            elif [ -n "$2" ]; then
-                WIFI_PASS=$2
-                shift
-            else
-                echo "$(basename ${0}): Error - '--wifi-pass' expects an argument"
-                usage
-                exit 1
-            fi
-            ;;
-        --wifi-security*)
-            if echo $1 | grep '=' >/dev/null ; then
-                WIFI_SECURITY=$(echo $1 | sed 's/^--wifi-security=//')
-            elif [ -n "$2" ]; then
-                WIFI_SECURITY=$2
-                shift
-            else
-                echo "$(basename ${0}): Error - '--wifi-security' expects an argument"
-                usage
-                exit 1
-            fi
-            # Validate the security type
-            if [[ "$WIFI_SECURITY" != "wpa-psk" && "$WIFI_SECURITY" != "sae" ]]; then
-                echo "$(basename ${0}): Error - Invalid Wi-Fi security type: $WIFI_SECURITY"
-                usage
-                exit 1
-            fi
-            ;;
+			if echo $1 | grep '=' >/dev/null ; then
+				WIFI_SSID=$(echo $1 | sed 's/^--wifi-ssid=//')
+			elif [ -n "$2" ]; then
+				WIFI_SSID=$2
+				shift
+			else
+				echo "$(basename ${0}): Error - '--wifi-ssid' expects an argument"
+				usage
+				exit 1
+			fi
+			;;
+		--wifi-pass*)
+			if echo $1 | grep '=' >/dev/null ; then
+				WIFI_PASS=$(echo $1 | sed 's/^--wifi-pass=//')
+			elif [ -n "$2" ]; then
+				WIFI_PASS=$2
+				shift
+			else
+				echo "$(basename ${0}): Error - '--wifi-pass' expects an argument"
+				usage
+				exit 1
+			fi
+			;;
+		--wifi-security*)
+			if echo $1 | grep '=' >/dev/null ; then
+				WIFI_SECURITY=$(echo $1 | sed 's/^--wifi-security=//')
+			elif [ -n "$2" ]; then
+				WIFI_SECURITY=$2
+				shift
+			else
+				echo "$(basename ${0}): Error - '--wifi-security' expects an argument"
+				usage
+				exit 1
+			fi
+			# Validate the security type
+			if [[ "$WIFI_SECURITY" != "wpa-psk" && "$WIFI_SECURITY" != "sae" ]]; then
+				echo "$(basename ${0}): Error - Invalid Wi-Fi security type: $WIFI_SECURITY"
+				usage
+				exit 1
+			fi
+			;;
 		--ign-url)
                         if echo $1 | grep '=' >/dev/null ; then
                                 IGN_URL=$(echo $1 | sed 's/^--ign-url=//')
