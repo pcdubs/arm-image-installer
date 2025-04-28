@@ -14,6 +14,7 @@ Usage: $(basename ${0}) <options>
 
 	--image=IMAGE   - xz compressed image file name
 	--media=DEVICE  - media device file (/dev/[sdX|mmcblkX])
+
 Optional
 	--addconsole    - Add system console kernel parameter for the target
 	--addkey        - /path/to/ssh-public-key
@@ -29,6 +30,7 @@ Optional
 	--wifi-pass=PASS        - Wi-Fi password to configure
 	--wifi-security=TYPE    - Wi-Fi security type (wpa-psk, sae)
 	-y              - Assumes yes, will not wait for confirmation
+
 Help
 	--supported     - List of hardware we support writing out boot firmware
 	--version       - Display version and exit
