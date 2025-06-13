@@ -91,6 +91,10 @@ while [ $# -gt 0 ]; do
 				usage
 				exit 1
 			fi
+                        # Explicitly expand the tilde if it's the first character
+                        if [ "$(echo "$IMAGE" | cut -c1)" = "~" ]; then
+                                IMAGE="${HOME}${IMAGE#~}"
+                        fi
 			;;
 		--media*)
 			if echo $1 | grep '=' >/dev/null ; then
@@ -114,6 +118,10 @@ while [ $# -gt 0 ]; do
 				echo "$(basename ${0}): Error - '--addkey' expects an argument"
 				usage
 				exit 1
+			fi
+			# Explicitly expand the tilde if it's the first character
+			if [ "$(echo "$SSH_KEY" | cut -c1)" = "~" ]; then
+				SSH_KEY="${HOME}${SSH_KEY#~}"
 			fi
 			;;
 		--selinux*)
