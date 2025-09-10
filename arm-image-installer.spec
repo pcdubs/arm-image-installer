@@ -1,6 +1,6 @@
 Name:		arm-image-installer
-Version:	5.0
-Release:	3%{?dist}
+Version:	5.1
+Release:	1%{?dist}
 Summary:	Writes binary image files to any specified block device
 License:	GPL-2.0-or-later
 URL:		https://github.com/fedora-arm/arm-image-installer/
@@ -56,6 +56,9 @@ ln -s /usr/bin/arm-image-installer %{buildroot}%{_bindir}/fedora-arm-image-insta
 %{_datadir}/arm-image-installer/
 
 %changelog
+* Wed Sep 10 2025 Paul Whalen <pwhalen@fedoraproject.org> - 5.1-1
+- Update to v5.1
+
 * Wed Jul 23 2025 Fedora Release Engineering <releng@fedoraproject.org> - 5.0-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_43_Mass_Rebuild
 
