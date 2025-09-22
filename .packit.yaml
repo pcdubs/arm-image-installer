@@ -21,3 +21,14 @@ jobs:
       - fedora-latest-stable
       - fedora-development
 
+  - job: koji_build
+    trigger: commit
+    dist_git_branches:
+      - fedora-latest-stable
+      - fedora-development
+
+  - job: bodhi_update
+    trigger: commit
+    dist_git_branches:
+      - fedora-latest-stable
+      - fedora-development
