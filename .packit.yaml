@@ -5,8 +5,10 @@ upstream_project_url: https://github.com/fedora-arm/arm-image-installer
 upstream_tag_template: v{version}
 
 files_to_sync:
-  - src: arm-image-installer.spec
-    dest: arm-image-installer.spec
+  - src:
+      - "arm-image-installer.spec"
+      - ".packit.yaml"
+    dest: .
 
 jobs:
   - job: copr_build
