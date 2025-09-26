@@ -788,21 +788,23 @@ if [ "$SHOWBOOT" != "" ]; then
 fi
 
 if [ -n "$IGN_URL" ]; then
-	if echo "$IGN_URL" | grep -q "://"; then
-		echo "= Adding ignition url for configuraion on firstboot."
-		sed -i "s|true|true ignition.firstboot=1 ignition.config.url=${IGN_URL}|g" /tmp/boot/ignition.firstboot
-	else
-		echo "Error: "$IGN_URL" is not a valid url."
-		exit 1
-	fi
-elif [ -f "$IGNITION" ]; then
-	echo "= Adding ignition file for configuraion on firstboot."
-	mkdir -p /tmp/boot/ignition
-	cp "$IGNITION" /tmp/boot/ignition/config.ign
-	sed -i "s|true|true ignition.firstboot=1 ignition.config.file=/ignition/config.ign|g" /tmp/boot/ignition.firstboot
-else
-	echo "Error: Local Ignition file '$IGNITION' not found!"
-	exit 1
+  if echo "$IGN_URL" | grep -q "://"; then
+    echo "= Adding ignition url for configuraion on firstboot."
+    sed -i "s|true|true ignition.firstboot=1 ignition.config.url=${IGN_URL}|g" /tmp/boot/ignition.firstboot
+  else
+    echo "Error: \"$IGN_URL\" is not a valid url."
+    exit 1
+  fi
+elif [ -n "$IGNITION" ]; then
+  if [ -f "$IGNITION" ]; then
+    echo "= Adding ignition file for configuraion on firstboot."
+    mkdir -p /tmp/boot/ignition
+    cp "$IGNITION" /tmp/boot/ignition/config.ign
+    sed -i "s|true|true ignition.firstboot=1 ignition.config.file=/ignition/config.ign|g" /tmp/boot/ignition.firstboot
+  else
+    echo "Error: Local Ignition file '$IGNITION' not found!"
+    exit 1
+  fi
 fi
 
 sync
