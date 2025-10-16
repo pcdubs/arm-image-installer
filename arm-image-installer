@@ -191,7 +191,7 @@ while [ $# -gt 0 ]; do
 				exit 1
 			fi
 			;;
-		--ign-url)
+		--ign-url*)
                         if echo $1 | grep '=' >/dev/null ; then
                                 IGN_URL=$(echo $1 | sed 's/^--ign-url=//')
                         elif [ -n "$2" ]; then
@@ -203,7 +203,7 @@ while [ $# -gt 0 ]; do
                                 exit 1
                         fi
                         ;;
-		--ignition)
+		--ignition*)
                         if echo $1 | grep '=' >/dev/null ; then
                                 IGNITION=$(echo $1 | sed 's/^--ignition=//')
                         elif [ -n "$2" ]; then
