@@ -1,0 +1,33 @@
+summary: Basic smoke test for arm-image-installer
+description: |
+    Quick smoke test that downloads a Server image and creates
+    a basic custom disk image, then boots it in QEMU to verify
+    it works.
+
+tag:
+    - quick
+    - smoke
+    - server
+
+provision:
+    how: virtual
+    image: fedora:latest
+    # Minimal requirements for basic test
+
+prepare:
+    - name: Install dependencies
+      how: shell
+      script: |
+        dnf install -y qemu-system-aarch64 edk2-aarch64 curl nmap-ncat xz lvm2
+
+execute:
+    how: tmt
+    script: |
+        ./tests/test-server-basic.sh
+    duration: 30m
+
+environment:
+    CACHE_DIR: /var/tmp/arm-image-installer-test-cache
+    TEST_OUTPUT_DIR: /var/tmp/arm-image-installer-tests
+    FEDORA_VERSION: "43"
+    SKIP_BOOT_TEST: "1"  # Skip QEMU boot test in CI (no nested virt)

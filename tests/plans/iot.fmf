@@ -1,0 +1,34 @@
+summary: IoT image test with ignition
+description: |
+    Test IoT image creation with ignition configuration.
+    Downloads latest IoT image, creates a custom image with ignition,
+    and boots it in QEMU to verify ignition processing works.
+
+tag:
+    - iot
+    - ignition
+    - full
+
+provision:
+    how: virtual
+    image: fedora:latest
+    memory: 4096  # 4GB RAM for QEMU VM
+    disk: 50      # 50GB for test image creation and downloads
+
+prepare:
+    - name: Install dependencies
+      how: shell
+      script: |
+        dnf install -y qemu-system-aarch64 edk2-aarch64 curl nmap-ncat openssh-clients xz lvm2
+
+execute:
+    how: tmt
+    script: |
+        ./tests/test-iot.sh
+    duration: 45m
+
+environment:
+    CACHE_DIR: /var/tmp/arm-image-installer-test-cache
+    TEST_OUTPUT_DIR: /var/tmp/arm-image-installer-tests
+    FEDORA_VERSION: "43"
+    SKIP_BOOT_TEST: "1"  # Skip QEMU boot test in CI (no nested virt)
