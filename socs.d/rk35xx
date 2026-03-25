@@ -1,0 +1,5 @@
+# write uboot
+echo "= Writing u-boot-rockchip.bin for $TARGET .... on media $MEDIA"
+dd if=$PREFIX/usr/share/uboot/$TARGET/u-boot-rockchip.bin of=$MEDIA seek=64; sync
+# set console for Rockchips
+SYSCON=ttyS2,1500000n8
