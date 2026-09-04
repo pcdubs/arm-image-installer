@@ -710,16 +710,25 @@ if [ "$RESIZEFS" != "" ]; then
 			get_lv_name
 			lvextend --devicesfile "" --devices "$MEDIA" --devices "$ROOTPART" -l +100%FREE /dev/$LVM_NAME/$LV_NAME
 			ROOTLV="/dev/$LVM_NAME/$LV_NAME"
+			udevadm settle
 		fi
 	fi
 
 	if [ "$FS_TYPE" = "xfs" ] && [ "$LVM_NAME" != "" ]; then
 		mkdir /tmp/root > /dev/null 2>&1
-		mount "$ROOTLV" /tmp/root > /dev/null 2>&1
+		mount "$ROOTLV" /tmp/root
+		if [ $? -ne 0 ]; then
+			echo "Error: mount $ROOTLV /tmp/root failed"
+			exit 1
+		fi
 		xfs_growfs /tmp/root
 	elif [ "$FS_TYPE" = "btrfs" ]; then
 		mkdir /tmp/root > /dev/null 2>&1
-		mount "$ROOTPART" /tmp/root > /dev/null 2>&1
+		mount "$ROOTPART" /tmp/root
+		if [ $? -ne 0 ]; then
+			echo "Error: mount $ROOTPART /tmp/root failed"
+			exit 1
+		fi
 		btrfs filesystem resize max /tmp/root
 	elif [ "$FS_TYPE" = "ext4" ]; then
 		fsck.ext4 -fy "$ROOTPART"
@@ -755,14 +764,19 @@ fi
 if [ "$RESIZEFS" = "" ]; then
 	get_lvm_name
 	vgchange --devicesfile "" --devices "$MEDIA" --devices "$ROOTPART" -a y $LVM_NAME > /dev/null 2>&1
+	udevadm settle
 fi
 
 if [ "$(grep /tmp/root /proc/mounts)" = "" ]; then
 	if [ "$LVM_NAME" != "" ]; then
 		get_lv_name
-		mount "/dev/$LVM_NAME/$LV_NAME" /tmp/root > /dev/null 2>&1
+		mount "/dev/$LVM_NAME/$LV_NAME" /tmp/root
 	else
         	mount "$ROOTPART" /tmp/root
+	fi
+	if [ $? -ne 0 ]; then
+		echo "Error: mount /tmp/root failed"
+		exit 1
 	fi
 fi
 
