@@ -731,6 +731,7 @@ if [ "$RESIZEFS" != "" ]; then
 			echo "Error: mount $ROOTDEV /tmp/root failed"
 			exit 1
 		fi
+		ROOT_MOUNTED=1
 		xfs_growfs /tmp/root
 	elif [ "$FS_TYPE" = "btrfs" ]; then
 		mkdir /tmp/root > /dev/null 2>&1
@@ -739,6 +740,7 @@ if [ "$RESIZEFS" != "" ]; then
 			echo "Error: mount $ROOTDEV /tmp/root failed"
 			exit 1
 		fi
+		ROOT_MOUNTED=1
 		btrfs filesystem resize max /tmp/root
 	elif [ "$FS_TYPE" = "ext4" ]; then
 		fsck.ext4 -fy "$ROOTDEV"
@@ -784,7 +786,7 @@ else
 	ROOTDEV="$ROOTPART"
 fi
 
-if [ "$(grep /tmp/root /proc/mounts)" = "" ]; then
+if [ "$ROOT_MOUNTED" != "1" ]; then
 	mount "$ROOTDEV" /tmp/root
 	if [ $? -ne 0 ]; then
 		echo "Error: mount $ROOTDEV /tmp/root failed"
