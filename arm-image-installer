@@ -643,7 +643,7 @@ fi
 
 FS_TYPE=$(blkid "$ROOTPART" -s TYPE -o value)
 
-if [ "$FS_TYPE" = "LVM2_member" ]; then FS_TYPE="xfs"; fi
+# For LVM roots, FS_TYPE is re-detected once known/activated
 
 if [ "$FS_TYPE" = "btrfs" ]; then
 	BTRFS=1
@@ -711,28 +711,38 @@ if [ "$RESIZEFS" != "" ]; then
 			lvextend --devicesfile "" --devices "$MEDIA" --devices "$ROOTPART" -l +100%FREE /dev/$LVM_NAME/$LV_NAME
 			ROOTLV="/dev/$LVM_NAME/$LV_NAME"
 			udevadm settle
+			FS_TYPE=$(blkid "$ROOTLV" -s TYPE -o value)
+			if [ "$FS_TYPE" = "btrfs" ]; then
+				BTRFS=1
+			fi
 		fi
 	fi
 
-	if [ "$FS_TYPE" = "xfs" ] && [ "$LVM_NAME" != "" ]; then
+	if [ "$LVM_NAME" != "" ]; then
+		ROOTDEV="$ROOTLV"
+	else
+		ROOTDEV="$ROOTPART"
+	fi
+
+	if [ "$FS_TYPE" = "xfs" ]; then
 		mkdir /tmp/root > /dev/null 2>&1
-		mount "$ROOTLV" /tmp/root
+		mount "$ROOTDEV" /tmp/root
 		if [ $? -ne 0 ]; then
-			echo "Error: mount $ROOTLV /tmp/root failed"
+			echo "Error: mount $ROOTDEV /tmp/root failed"
 			exit 1
 		fi
 		xfs_growfs /tmp/root
 	elif [ "$FS_TYPE" = "btrfs" ]; then
 		mkdir /tmp/root > /dev/null 2>&1
-		mount "$ROOTPART" /tmp/root
+		mount "$ROOTDEV" /tmp/root
 		if [ $? -ne 0 ]; then
-			echo "Error: mount $ROOTPART /tmp/root failed"
+			echo "Error: mount $ROOTDEV /tmp/root failed"
 			exit 1
 		fi
 		btrfs filesystem resize max /tmp/root
 	elif [ "$FS_TYPE" = "ext4" ]; then
-		fsck.ext4 -fy "$ROOTPART"
-		resize2fs "$ROOTPART"
+		fsck.ext4 -fy "$ROOTDEV"
+		resize2fs "$ROOTDEV"
 	fi
 fi
 
@@ -767,16 +777,25 @@ if [ "$RESIZEFS" = "" ]; then
 	udevadm settle
 fi
 
+if [ "$LVM_NAME" != "" ]; then
+	get_lv_name
+	ROOTDEV="/dev/$LVM_NAME/$LV_NAME"
+else
+	ROOTDEV="$ROOTPART"
+fi
+
 if [ "$(grep /tmp/root /proc/mounts)" = "" ]; then
-	if [ "$LVM_NAME" != "" ]; then
-		get_lv_name
-		mount "/dev/$LVM_NAME/$LV_NAME" /tmp/root
-	else
-        	mount "$ROOTPART" /tmp/root
-	fi
+	mount "$ROOTDEV" /tmp/root
 	if [ $? -ne 0 ]; then
-		echo "Error: mount /tmp/root failed"
+		echo "Error: mount $ROOTDEV /tmp/root failed"
 		exit 1
+	fi
+fi
+
+if [ "$LVM_NAME" != "" ]; then
+	FS_TYPE=$(blkid "$ROOTDEV" -s TYPE -o value)
+	if [ "$FS_TYPE" = "btrfs" ]; then
+		BTRFS=1
 	fi
 fi
 
