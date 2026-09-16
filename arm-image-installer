@@ -583,6 +583,23 @@ fi
 partprobe "$MEDIA"
 sleep 2
 
+resize_partition () {
+	# Grow partition $1 on device $2 to fill available space, retrying since
+	# the device can report busy right after a big write. Exits on repeated
+	# failure instead of letting the caller carry on against a stale table.
+	partnum="$1"
+	media="$2"
+	tries=0
+	while ! echo ", +" | sfdisk -N "$partnum" "$media"; do
+		tries=$((tries + 1))
+		if [ "$tries" -gt 5 ]; then
+			echo "= Partition Resize Failed."
+			exit 1
+		fi
+		sleep 5
+	done
+}
+
 get_vg_uuid () {
 	# Resolve the VG's UUID directly from the root partition using pvs.
 	# Everything downstream addresses the VG by UUID instead of name, so a
@@ -663,30 +680,11 @@ fi
 if [ "$RESIZEFS" != "" ]; then
 	echo "= Resizing $MEDIA ...."
 	sync
-	count=0
 	if [ "$PARTNUM" = "4" ] || [ "$PARTNUM" = "5" ]; then
-		echo ", +" | sfdisk -N "4" "$MEDIA"
-		while [ $? != '0' ]; do
-			sleep 5
-			echo ", +" | sfdisk -N "4" "$MEDIA"
-			count=$((count + 1))
-			if [ $count -gt 5 ]; then
-				echo "= Partition Resize Failed."
-				continue
-			fi
-		done
+		resize_partition "4" "$MEDIA"
 		partprobe "$MEDIA"
 		if [ "$PARTNUM" = "5" ]; then
-			echo ", +" | sfdisk -N "$PARTNUM" "$MEDIA"
-			while [ $? != '0' ]; do
-				sleep 5
-				echo ", +" | sfdisk -N "$PARTNUM" "$MEDIA"
-				count=$((count + 1))
-				if [ $count -gt 5 ]; then
-					echo "= Partition Resize Failed."
-					continue
-				fi
-			done
+			resize_partition "$PARTNUM" "$MEDIA"
 		fi
 		partprobe "$MEDIA"
 	fi
@@ -697,16 +695,7 @@ if [ "$RESIZEFS" != "" ]; then
 			vgchange --devicesfile "" --devices "$MEDIA" --devices "$ROOTPART" --select "vg_uuid=$VG_UUID" -a n > /dev/null 2>&1
 		fi
 
-		echo ", +" | sfdisk -N "$PARTNUM" "$MEDIA"
-		while [ $? != '0' ]; do
-			sleep 5
-			echo ", +" | sfdisk -N "$PARTNUM" "$MEDIA"
-			count=$((count + 1))
-			if [ $count -gt 5 ]; then
-				echo "= Partition Resize Failed."
-				continue
-			fi
-		done
+		resize_partition "$PARTNUM" "$MEDIA"
 		sleep 5
 		partprobe "$MEDIA"
 		if [ "$VG_UUID" != "" ]; then
